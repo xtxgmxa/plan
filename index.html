@@ -3,78 +3,241 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>跆拳道分組排程系統</title>
+  <title>對打與品勢行事曆</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #f1f2f7, #e4ebf5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      background-color: #f4f4f8;
+      margin: 0;
+      padding: 2rem;
+      color: #333;
     }
 
-    .entry-container {
+    .calendar {
+      max-width: 960px;
+      margin: auto;
       background: white;
-      padding: 3rem 2rem;
-      border-radius: 16px;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-      text-align: center;
-      width: 90%;
-      max-width: 400px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      overflow: hidden;
     }
 
-    h1 {
-      margin-bottom: 2rem;
-      color: #2c3e50;
-      font-size: 1.8rem;
-    }
-
-    .btn-group {
+    .calendar-header {
       display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    .entry-btn {
+      justify-content: space-between;
+      align-items: center;
       background: #4a90e2;
       color: white;
-      border: none;
       padding: 1rem;
-      font-size: 1.1rem;
-      border-radius: 8px;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .calendar-header button {
+      background: white;
+      color: #4a90e2;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-weight: bold;
+      border-radius: 6px;
       cursor: pointer;
-      text-decoration: none;
-      transition: background 0.3s ease;
     }
 
-    .entry-btn:hover {
-      background: #357abd;
+    .calendar-grid-wrapper {
+      overflow-x: auto;
     }
 
-    @media (max-width: 500px) {
-      h1 {
-        font-size: 1.5rem;
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      border-top: 1px solid #ddd;
+      min-width: 700px;
+    }
+
+    .calendar-grid .cell {
+      padding: 0.75rem;
+      text-align: left;
+      border: 1px solid #eee;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+      min-height: 80px;
+    }
+
+    .name-group {
+      display: inline-block;
+      white-space: nowrap;
+      background-color: #eef3ff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-top: 4px;
+      margin-bottom: 2px;
+      display: block;
+    }
+
+    .today {
+      background-color: #ffe0b2;
+      font-weight: bold;
+    }
+
+    .weekday-row {
+      background-color: #eef0f5;
+      font-weight: bold;
+      display: contents;
+    }
+
+    .weekday-row .cell {
+      border-bottom: none;
+      text-align: center;
+    }
+.clean_title{width: 100%;text-align: center;font-weight: 900;font-size: 2.1rem;}
+    /* 手機版 */
+    @media (max-width: 600px) {
+      .calendar-grid {
+        display: flex;
+        flex-direction: column;
+        min-width: 100%;
       }
 
-      .entry-btn {
-        font-size: 1rem;
-        padding: 0.9rem;
+      .calendar-grid .weekday-row {
+        display: none;
+      }
+
+      .calendar-grid .cell::before {
+        content: attr(data-weekday);
+        display: block;
+        font-weight: bold;
+        background-color: #eef0f5;
+        padding: 0.25rem 0.5rem;
+        border-bottom: 1px solid #ccc;
+        text-align: center;
+        margin: -0.75rem -0.75rem 0.5rem -0.75rem;
+      }
+
+      .calendar-grid .cell {
+        border-bottom: 1px solid #ccc;
+        border-right: none;
+        min-height: auto;
+      }
+
+      .calendar-grid .cell:not(.has-data) {
+        display: none;
       }
     }
   </style>
 </head>
 <body>
-
-  <div class="entry-container">
-    <h1>跆拳道分組排程系統</h1>
-    <div class="btn-group">
-      <a class="entry-btn" href="./clean/index.html" target="_blank">打掃輪值</a>
-      <a class="entry-btn" href="https://xtxgmxa.github.io/Calendar/" target="_blank">集訓表</a>
+  <div class="calendar">
+    <div class="calendar-header">
+      <div class="clean_title">打掃輪值</div>
+      <button onclick="changeMonth(-1)">← 上月</button>
+      <h2 id="monthLabel">6 月 2025</h2>
+      <button onclick="changeMonth(1)">下月 →</button>
+    </div>
+    <div class="calendar-grid-wrapper">
+      <div class="calendar-grid" id="calendarGrid"></div>
     </div>
   </div>
 
+  <script>
+    const daidaGroups = [
+      ["俐彤", "家宥"],
+      ["亦宸", "知禧", "靖允", "侑廷"],
+      ["霖", "嘉", "鴨", "芷涵"]
+    ];
+
+    const pumsayGroups = [
+      ["侑廷", "宥豪", "宜霏"],
+      ["知禧", "靖允", "翰文"]
+    ];
+
+    const startDaida = new Date("2025-06-16");
+    const startPumsay = new Date("2025-06-17");
+
+    let currentMonth = 5;
+    let currentYear = 2025;
+
+    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+
+    const renderCalendar = () => {
+      const grid = document.getElementById("calendarGrid");
+      const label = document.getElementById("monthLabel");
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const today = new Date();
+
+      label.textContent = `${currentMonth + 1} 月 ${currentYear}`;
+      grid.innerHTML = "";
+
+      // 星期列 (PC版才顯示)
+      const weekdayRow = document.createElement("div");
+      weekdayRow.className = "weekday-row";
+      weekdays.forEach(day => {
+        const cell = document.createElement("div");
+        cell.textContent = `星期${day}`;
+        cell.classList.add("cell");
+        weekdayRow.appendChild(cell);
+      });
+      grid.appendChild(weekdayRow);
+
+      // 空白格填滿前面空位
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement("div");
+        emptyCell.className = "cell";
+        grid.appendChild(emptyCell);
+      }
+
+      // 日期格
+      for (let i = 1; i <= daysInMonth; i++) {
+        const date = new Date(currentYear, currentMonth, i);
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.setAttribute("data-weekday", `星期${weekdays[date.getDay()]}`);
+
+        let hasContent = false;
+        let content = `${i}`;
+
+        if (date.getDay() === 1 && date >= startDaida) {
+          const weekNum = Math.floor((date - startDaida) / (7 * 86400000));
+          const group = daidaGroups[(weekNum + 1) % daidaGroups.length];
+          content += `\n對打組：<span class="name-group">${group.join("、")}</span>`;
+          hasContent = true;
+        }
+
+        if (date.getDay() === 2 && date >= startPumsay) {
+          const weekNum = Math.floor((date - startPumsay) / (7 * 86400000));
+          const group = pumsayGroups[weekNum % pumsayGroups.length];
+          content += `\n品勢組：<span class="name-group">${group.join("、")}</span>`;
+          hasContent = true;
+        }
+
+        if (date.toDateString() === today.toDateString()) {
+          cell.classList.add("today");
+          hasContent = true;
+        }
+
+        if (hasContent) {
+          cell.classList.add("has-data");
+        }
+
+        cell.innerHTML = content;
+        grid.appendChild(cell);
+      }
+    };
+
+    const changeMonth = (delta) => {
+      currentMonth += delta;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar();
+    };
+
+    renderCalendar();
+  </script>
 </body>
 </html>
