@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <title>跆拳道分組排程系統</title>
   <style>
     body {
@@ -23,12 +26,12 @@
       box-shadow: 0 12px 24px rgba(0,0,0,0.1);
       text-align: center;
       width: 90%;
-      max-width: 400px;
+      max-width: 480px;
     }
 
     h1 {
       margin-bottom: 2rem;
-      color: #2c3e50;
+      color:var(--primary) ;
       font-size: 1.8rem;
     }
 
@@ -39,7 +42,7 @@
     }
 
     .entry-btn {
-      background: #4a90e2;
+      background: var(--accent);
       color: white;
       border: none;
       padding: 1rem;
@@ -47,33 +50,60 @@
       border-radius: 8px;
       cursor: pointer;
       text-decoration: none;
-      transition: background 0.3s ease;
+      transition:0.3s ease;
+      margin: 0.5rem 0;
+    }
+    .entry-btn:hover{
+      transform: scale(1.1);
+      background: var(--secondary);
     }
 
-    .entry-btn:hover {
-      background: #357abd;
+    .outlink li{color: var(--primary);}
+    .outlink li a{color: inherit;text-decoration: underline;}
+    .outlink li a:hover{
+      text-decoration: none;
     }
+    .slow-spin {animation: spin 3s linear infinite;}
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
     @media (max-width: 500px) {
+      body {
+        align-items:flex-start;
+        padding:1rem 0 0 0;
+      }
       h1 {
         font-size: 1.5rem;
       }
 
       .entry-btn {
-        font-size: 1rem;
+        font-size: 1.2rem;
         padding: 0.9rem;
       }
+      .outlink li{margin: 0.25rem 0;}
+    }
+    :root{
+      --primary:#2c3e50;
+      --accent:#3882cb;
+      --secondary:#006d82;
     }
   </style>
 </head>
 <body>
 
   <div class="entry-container">
-    <h1>跆拳道分組排程系統</h1>
+    <h1 class="lg:text-3xl text-2xl my-6 font-black"><i class="fas fa-clock fa-spin"></i> 跆拳道分組排程系統</h1>
     <div class="btn-group">
-      <a class="entry-btn" href="./clean/index.html" target="_blank">打掃輪值</a>
-      <a class="entry-btn" href="https://xtxgmxa.github.io/Calendar/" target="_blank">集訓表</a>
+      <a class="entry-btn" href="./clean/index.html" target="_blank"><i class="fa-solid fa-broom"></i> 打掃輪值</a>
+      <a class="entry-btn" href="https://xtxgmxa.github.io/Calendar/" target="_blank"><i class="fa-solid fa-hand-fist"></i> 集訓表</a>
     </div>
+    <ul class="w-full flex flex-wrap justify-around mt-8 text-lg text-blue-800 outlink">
+      <li><i class="fa-solid fa-link"></i> <a href="https://www.newtaipei-ntpctkd.com/ec99/rwd1691/Service.asp" target="_blank">新北跆拳年度行事曆</a></li>
+      <li><i class="fa-solid fa-link"></i> <a href="https://www.tpetkd.org.tw/%E5%89%AF%E6%9C%AC-%E8%B7%86%E6%8B%B3%E9%81%93%E8%A6%8F%E5%89%87" target="_blank">跆拳協會行事曆</a></li>
+
+    </ul>
   </div>
 
 </body>
