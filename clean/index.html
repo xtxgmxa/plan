@@ -5,133 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>對打與品勢打掃輪值表</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f8;
-      margin: 0;
-      padding: 2rem;
-      color: #333;
-    }
-
-    .calendar {
-      max-width: 960px;
-      margin: auto;
-      background: white;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #4a90e2;
-      color: white;
-      padding: 1rem;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .calendar-header button {
-      background: white;
-      color: #4a90e2;
-      border: none;
-      padding: 0.5rem 1rem;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .calendar-grid-wrapper {
-      overflow-x: auto;
-    }
-
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      border-top: 1px solid #ddd;
-      min-width: 700px;
-    }
-
-    .calendar-grid .cell {
-      padding: 0.75rem;
-      text-align: left;
-      border: 1px solid #eee;
-      white-space: pre-wrap;
-      word-break: break-word;
-      line-height: 1.5;
-      min-height: 80px;
-    }
-
-    .name-group {
-      display: inline-block;
-      white-space: nowrap;
-      background-color: #eef3ff;
-      padding: 4px 8px;
-      border-radius: 6px;
-      margin-top: 4px;
-      margin-bottom: 2px;
-      display: block;
-    }
-
-    .today {
-      /* background-color: #ffe0b2; */
-      font-weight: bold;
-      border:6px solid #6db6ff !important;
-    }
-
-    .weekday-row {
-      background-color: #eef0f5;
-      font-weight: bold;
-      display: contents;
-    }
-
-    .weekday-row .cell {
-      border-bottom: none;
-      text-align: center;
-    }
-
-    .clean_title {
-      width: 100%;
-      text-align: center;
-      font-weight: 900;
-      font-size: 2.1rem;
-    }
-
-    /* 手機版 */
-    @media (max-width: 600px) {
-      .calendar-grid {
-        display: flex;
-        flex-direction: column;
-        min-width: 100%;
-      }
-
-      .calendar-grid .weekday-row {
-        display: none;
-      }
-
-      .calendar-grid .cell::before {
-        content: attr(data-weekday);
-        display: block;
-        font-weight: bold;
-        background-color: #eef0f5;
-        padding: 0.25rem 0.5rem;
-        border-bottom: 1px solid #ccc;
-        text-align: center;
-        margin: -0.75rem -0.75rem 0.5rem -0.75rem;
-      }
-
-      .calendar-grid .cell {
-        border-bottom: 1px solid #ccc;
-        border-right: none;
-        min-height: auto;
-      }
-
-      .calendar-grid .cell:not(.has-data) {
-        display: none;
-      }
-    }
+  body{font-family:'Segoe UI',sans-serif;background-color:#f4f4f8;margin:0;padding:2rem;color:#333}
+  .calendar{max-width:960px;margin:auto;background:#fff;box-shadow:0 4px 16px #0000001a;border-radius:12px;overflow:hidden}
+  .calendar-header{display:flex;justify-content:space-between;align-items:center;background:#4a90e2;color:#fff;padding:1rem;flex-wrap:wrap;gap:.5rem}
+  .calendar-header button{background:#fff;color:#4a90e2;border:none;padding:.5rem 1rem;font-weight:700;border-radius:6px;cursor:pointer}
+  .calendar-grid-wrapper{overflow-x:auto}
+  .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #ddd;min-width:700px}
+  .calendar-grid .cell{padding:.75rem;text-align:left;border:1px solid #eee;white-space:pre-wrap;word-break:break-word;line-height:1.5;min-height:80px}
+  .name-group{display:inline-block;white-space:nowrap;background-color:#eef3ff;padding:4px 8px;border-radius:6px;margin-top:4px;margin-bottom:2px;display:block}
+  .today{font-weight:700;border:6px solid #6db6ff!important}
+  .weekday-row{background-color:#eef0f5;font-weight:700;display:contents}
+  .weekday-row .cell{border-bottom:none;text-align:center}
+  .clean_title{width:100%;text-align:center;font-weight:900;font-size:2.1rem}
+  @media (max-width: 600px) {
+  .calendar-grid{display:flex;flex-direction:column;min-width:100%}
+  .calendar-grid .weekday-row{display:none}
+  .calendar-grid .cell::before{content:attr(data-weekday);display:block;font-weight:700;background-color:#eef0f5;padding:.25rem .5rem;border-bottom:1px solid #ccc;text-align:center;margin:-.75rem -.75rem .5rem}
+  .calendar-grid .cell{border-bottom:1px solid #ccc;border-right:none;min-height:auto}
+  .calendar-grid .cell:not(.has-data){display:none}
+  }
   </style>
 </head>
 <body>
@@ -166,7 +58,8 @@
                 <strong>品勢組：</strong><br>{{ getPumsayGroup(date).join("、") }}
             </div>
           </template>
-          <div v-else style="color:red; font-weight:bold;">順延</div>
+          <div v-else style="color:red; font-weight:bold;">            
+            【{{ getExcludedInfo(date)?.label }}】順延</div>
         </div>
       </div>
     </div>
@@ -198,6 +91,7 @@
             ["知禧", "靖允", ],
           ],
           excludedDates: [
+          { date: '2025-10-06', label: '中秋節' },
             // '2025-06-23',
             // '2025-06-24',
             // '2025-06-30'
@@ -236,17 +130,19 @@
           return date.toDateString() === today.toDateString();
         },
         isExcluded(date) {
-            return this.excludedDates.includes(
-            date.getFullYear() + '-' +
-            String(date.getMonth() + 1).padStart(2, '0') + '-' +
-            String(date.getDate()).padStart(2, '0')
-            );
+          return !!this.getExcludedInfo(date);
         },
         isDaida(date) {
           return date.getDay() === 1 && date >= this.startDaida && !this.isExcluded(date);
         },
         isPumsay(date) {
           return date.getDay() === 2 && date >= this.startPumsay && !this.isExcluded(date);
+        },
+        getExcludedInfo(date) {
+          const key = date.getFullYear() + '-' +
+                      String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                      String(date.getDate()).padStart(2, '0');
+          return this.excludedDates.find(d => d.date === key);
         },
         getDaidaGroup(date) {
   let index = 0;
