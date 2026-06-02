@@ -9,20 +9,28 @@
   .calendar{max-width:960px;margin:auto;background:#fff;box-shadow:0 4px 16px #0000001a;border-radius:12px;overflow:hidden}
   .calendar-header{display:flex;justify-content:space-between;align-items:center;background:#4a90e2;color:#fff;padding:1rem;flex-wrap:wrap;gap:.5rem}
   .calendar-header button{background:#fff;color:#4a90e2;border:none;padding:.5rem 1rem;font-weight:700;border-radius:6px;cursor:pointer}
+  .current-datetime{width:100%;text-align:center;background:linear-gradient(135deg,#e9f3ff,#d8e9ff 45%,#c7defe);border:1px solid #8db8ee;border-radius:10px;padding:.55rem .8rem;font-size:1rem;font-weight:800;color:#1f4f88;letter-spacing:.02em;box-shadow:inset 0 1px 0 #ffffffa6,0 3px 8px #1d5ea31f}
   .calendar-grid-wrapper{overflow-x:auto}
   .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #ddd;min-width:700px}
   .calendar-grid .cell{padding:.75rem;text-align:left;border:1px solid #eee;white-space:pre-wrap;word-break:break-word;line-height:1.5;min-height:80px}
+  .cell-date{font-weight:700;color:#1f2f44}
+  .today-date-tag{display:inline-block;margin-top:.35rem;padding:.18rem .48rem;font-size:.78rem;font-weight:800;border-radius:999px;background:#2a9d4b;color:#fff}
+  .mobile-status{display:none}
   .name-group{display:inline-block;white-space:nowrap;background-color:#eef3ff;padding:4px 8px;border-radius:6px;margin-top:4px;margin-bottom:2px;display:block}
-  .today{font-weight:700;border:6px solid #6db6ff!important}
+  .today{font-weight:700;border:6px solid #6db6ff!important;position:relative;background:#f1f8ff}
+  .today::after{content:"✓";position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:#2a9d4b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900;box-shadow:0 2px 6px #00000026}
   .weekday-row{background-color:#eef0f5;font-weight:700;display:contents}
   .weekday-row .cell{border-bottom:none;text-align:center}
   .clean_title{width:100%;text-align:center;font-weight:900;font-size:2.1rem}
   @media (max-width: 600px) {
+  .current-datetime{font-size:.92rem;padding:.5rem .65rem}
   .calendar-grid{display:flex;flex-direction:column;min-width:100%}
   .calendar-grid .weekday-row{display:none}
   .calendar-grid .cell::before{content:attr(data-weekday);display:block;font-weight:700;background-color:#eef0f5;padding:.25rem .5rem;border-bottom:1px solid #ccc;text-align:center;margin:-.75rem -.75rem .5rem}
   .calendar-grid .cell{border-bottom:1px solid #ccc;border-right:none;min-height:auto}
-  .calendar-grid .cell:not(.has-data){display:none}
+  .calendar-grid .cell:not(.show-mobile){display:none}
+  .mobile-status{display:inline-block;margin-top:.35rem;padding:.18rem .48rem;font-size:.78rem;font-weight:700;border-radius:999px;background:#e7effb;color:#2e5688}
+  .today-date-tag{font-size:.8rem}
   }
   </style>
 </head>
@@ -33,6 +41,9 @@
       <button @click="changeMonth(-1)">← 上月</button>
       <h2>{{ currentMonth + 1 }} 月 {{ currentYear }}</h2>
       <button @click="changeMonth(1)">下月 →</button>
+      <div class="current-datetime">
+        當前時間：{{ formattedNow }}
+      </div>
     </div>
     <div class="calendar-grid-wrapper">
       <div class="calendar-grid">
@@ -46,10 +57,12 @@
           class="cell"
           v-for="date in daysInMonth"
           :key="date"
-          :class="{ today: isToday(date), 'has-data': hasData(date) }"
+          :class="{ today: isToday(date), 'has-data': hasData(date), 'show-mobile': shouldShowOnMobile(date) }"
           :data-weekday="'星期' + weekdays[getWeekday(date)]"
         >
-          {{ date.getDate() }}
+          <div class="cell-date">{{ date.getDate() }}</div>
+          <div v-if="isToday(date)" class="today-date-tag">{{ getFullDateLabel(date) }}</div>
+          <div v-else class="mobile-status">{{ getDateStatus(date) }}</div>
           <template v-if="!isExcluded(date)">
             <div v-if="isDaida(date)" class="name-group">
                 <strong>對打組：</strong><br>{{ getDaidaGroup(date).join("、") }}
@@ -99,6 +112,8 @@
             // '2025-06-24',
             // '2025-06-30'
           ],
+          now: today,
+          timerId: null
         }
       },
       computed: {
@@ -112,6 +127,26 @@
         },
         firstDayOfMonth() {
           return new Date(this.currentYear, this.currentMonth, 1).getDay();
+        },
+        formattedNow() {
+          const d = this.now;
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          const hour = String(d.getHours()).padStart(2, '0');
+          const minute = String(d.getMinutes()).padStart(2, '0');
+          const weekday = this.weekdays[d.getDay()];
+          return `${year}/${month}/${day}（週${weekday}）${hour}:${minute}`;
+        }
+      },
+      mounted() {
+        this.timerId = setInterval(() => {
+          this.now = new Date();
+        }, 1000);
+      },
+      beforeUnmount() {
+        if (this.timerId) {
+          clearInterval(this.timerId);
         }
       },
       methods: {
@@ -128,9 +163,29 @@
         getWeekday(date) {
           return date.getDay();
         },
+        getDateOnly(date) {
+          return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        },
         isToday(date) {
           const today = new Date();
-          return date.toDateString() === today.toDateString();
+          return this.getDateOnly(date).getTime() === this.getDateOnly(today).getTime();
+        },
+        getDateStatus(date) {
+          const today = this.getDateOnly(new Date());
+          const target = this.getDateOnly(date);
+          if (target < today) return '已輪過';
+          if (target > today) return '尚未輪到';
+          return '今天';
+        },
+        shouldShowOnMobile(date) {
+          const day = date.getDay();
+          return day === 1 || day === 2;
+        },
+        getFullDateLabel(date) {
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const weekday = this.weekdays[date.getDay()];
+          return `${month}/${day}（週${weekday}）`;
         },
         isExcluded(date) {
           return !!this.getExcludedInfo(date);
